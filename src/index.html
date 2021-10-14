@@ -1,19 +1,25 @@
 <!DOCTYPE html>
+<!--suppress HtmlUnknownTarget -->
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Webpack 4 TypeScript boilerplate</title>
-    <link
-      rel="stylesheet"
-      href="<%=htmlWebpackPlugin.files.chunks.main.css %>"
-    />
-  </head>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>Crypto Tips Web Element</title>
+    <!--suppress JSUnresolvedLibraryURL -->
+    <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css"
+          integrity="sha512-NhSC1YmyruXifcj/KFRWoC561YpHpc5Jtzgvbuzx5VozKpWvQ+4nXhPdFgmx8xqexRcpAglTj9sIBWINXa8x5w=="
+          referrerpolicy="no-referrer" rel="stylesheet"/>
+    <link rel="stylesheet" href="<%= htmlWebpackPlugin.files.chunks.main.css %>"/>
+    <style>
+        crypto-tips {
+            --primary: white;
+        }
+    </style>
+</head>
 
-  <body>
-    <h1 class="center">Hello, world! It works!</h1>
-    <h2 class="center">Webpack 4 boilerplate with TypeScript is running!</h2>
-    <script src="<%= htmlWebpackPlugin.files.chunks.main.entry %>"></script>
-  </body>
+<body>
+<crypto-tips></crypto-tips>
+<script src="<%= htmlWebpackPlugin.files.chunks.main.entry %>"></script>
+</body>
 </html>

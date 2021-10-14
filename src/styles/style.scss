@@ -1,4 +1,12 @@
-@import '/node_modules/normalize.css/normalize.css';
-
+//@import '/node_modules/normalize.css/normalize.css';
 @import 'modules/variables';
-@import 'modules/base'
+
+:host {
+  --primary: blue;
+  display: block;
+  background-color: var(--primary, white);
+
+  h1 {
+    color: #333333;
+  }
+}
