@@ -16,10 +16,14 @@
             --primary: white;
         }
     </style>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/web3/1.6.0/web3.min.js"></script>
 </head>
 
 <body>
-<crypto-tips></crypto-tips>
+<crypto-tips>
+    <p slot="info">Some info</p>
+    <span slot="button">Donate now</span>
+</crypto-tips>
 <script src="<%= htmlWebpackPlugin.files.chunks.main.entry %>"></script>
 </body>
 </html>
