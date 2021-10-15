@@ -23,11 +23,23 @@ class CryptoTips extends HTMLElement {
         this.#root.appendChild(template.content.cloneNode(true));
     }
 
-    get #infoEl(): HTMLDivElement {
-        return this.#root.querySelector('.container-info');
+    get #walletBtns(): NodeListOf<HTMLButtonElement> {
+        return this.#walletContainer.querySelectorAll('button');
     }
 
-    get #buttonEl(): HTMLButtonElement {
+    get #container(): HTMLDivElement {
+        return this.#root.querySelector('.container');
+    }
+
+    get #walletContainer(): HTMLDivElement {
+        return this.#root.querySelector('.wallet-container');
+    }
+
+    get #isDryRun(): boolean {
+        return this.hasAttribute('dry-run');
+    }
+
+    get #tipBtn(): HTMLButtonElement {
         return this.#root.querySelector('button');
     }
 
@@ -36,7 +48,7 @@ class CryptoTips extends HTMLElement {
             const [address] = await this.#web3.eth.requestAccounts()
             this.#address = address;
             const wei = await this.getBalance();
-            this.#buttonEl.innerText = ETHCurrency.format(Number(this.#web3.utils.fromWei(wei, 'ether')))
+            this.#tipBtn.innerText = ETHCurrency.format(Number(this.#web3.utils.fromWei(wei, 'ether')))
         } catch (e) {
             console.error(e)
         }
@@ -47,8 +59,18 @@ class CryptoTips extends HTMLElement {
         try {
             return await this.#web3.eth.getBalance(this.#address);
         } catch {
-            // this.buttonEl.innerText = Currency.format(+this.#web3.utils.fromWei(wei, 'ether'))
+            // this.tipBtn.innerText = Currency.format(+this.#web3.utils.fromWei(wei, 'ether'))
         }
+    }
+
+    #selectWallet(): void {
+        this.#container.hidden = true;
+        this.#walletContainer.hidden = false;
+    }
+
+    #selectProvider(btn: HTMLButtonElement): void {
+        console.log(btn.value);
+        this.#web3 = new window.Web3(window.Web3.givenProvider);
     }
 
     async connectedCallback() {
@@ -66,10 +88,19 @@ class CryptoTips extends HTMLElement {
             await this.getAccount()
         }
 
-        this.#buttonEl.onclick = () => {
-            alert('Hello')
+        this.#walletBtns.forEach(btn => {
+            btn.onclick = () => this.#selectProvider(btn);
+        })
+
+        this.#tipBtn.onclick = () => {
+            this.#selectWallet();
         }
     }
+
+    // Invoked when the custom element is moved to a new document.
+    adoptedCallback() {}
+    disconnectedCallback() {}
+    attributeChangedCallback() {}
 }
 
 customElements.define('crypto-tips', CryptoTips)

@@ -12,8 +12,24 @@
           referrerpolicy="no-referrer" rel="stylesheet"/>
     <link rel="stylesheet" href="<%= htmlWebpackPlugin.files.chunks.main.css %>"/>
     <style>
+        body {
+            background: lightgrey;
+            font-family: "Andale Mono", sans-serif;
+        }
+
+        p {
+            margin: 0;
+        }
+
         crypto-tips {
-            --primary: white;
+            background-color: white;
+            border: 1px solid red;
+            border-radius: 2px;
+            /*--font-family: "Andale Mono", sans-serif;*/
+        }
+
+        crypto-tips p {
+            color: red;
         }
     </style>
     <script src="//cdnjs.cloudflare.com/ajax/libs/web3/1.6.0/web3.min.js"></script>
@@ -21,7 +37,7 @@
 
 <body>
 <crypto-tips>
-    <p slot="info">Some info</p>
+<!--    <p slot="info">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Atque dolores earum est hic id illo minus nihil nobis, perferendis quaerat sint soluta tenetur! Cum dolores ipsum iste maiores odit quisquam?</p>-->
     <span slot="button">Donate now</span>
 </crypto-tips>
 <script src="<%= htmlWebpackPlugin.files.chunks.main.entry %>"></script>

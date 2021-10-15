@@ -1,18 +1,93 @@
-//@import '/node_modules/normalize.css/normalize.css';
 @import 'modules/variables';
 
 :host {
-  --primary: blue;
-  display: block;
-  background-color: var(--primary, white);
+  --base-padding: 1em;
+  --base-text-color: #605050;
+  --font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 
-  h1 {
-    color: #333333;
+  --base-btn-border-radius: 3px;
+  --base-btn-padding-y: calc(var(--base-padding) / 3);
+  --base-btn-padding-x: var(--base-padding);
+  --base-btn-font-size: 0.8rem;
+  --base-btn-cursor: pointer;
+
+  --tip-btn-background: blue;
+  --tip-btn-color: white;
+  --tip-btn-border-size: 1px;
+  --tip-btn-border-weight: solid;
+  --tip-btn-border-radius: var(--base-btn-border-radius);
+  --tip-btn-border-color: var(--tip-btn-background);
+
+  --wallet-btn-background: white;
+  --wallet-btn-color: var(--base-text-color);
+  --wallet-btn-border-size: 1px;
+  --wallet-btn-border-weight: solid;
+  --wallet-btn-border-radius: var(--base-btn-border-radius);
+  --wallet-btn-border-color: var(--base-text-color);
+
+  display: block;
+  font-family: var(--font-family);
+  color: var(--base-text-color);
+  padding: calc(var(--base-padding) / 2);
+
+  [hidden] {
+    display: none !important;
+  }
+
+  button {
+    font-family: var(--font-family);
+    font-size: var(--base-btn-font-size);
+    cursor: var(--base-btn-cursor);
+    padding: var(--base-btn-padding-y) var(--base-btn-padding-x);
   }
 
   .container {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: var(--base-padding);
+
+    &-tools {
+      margin-inline-start: auto;
+
+      button {
+        background: var(--tip-btn-background);
+        color: var(--tip-btn-color);
+        border-radius: var(--tip-btn-border-radius);
+        border: var(--tip-btn-border-size) var(--tip-btn-border-weight) var(--tip-btn-border-color);
+      }
+    }
+
+    @media (max-width: 480px) {
+      flex-direction: column;
+
+      .container-info {
+        ::slotted(*) {
+          text-align: center;
+        }
+      }
+
+      &-tools {
+        margin-inline-start: unset;
+      }
+    }
+  }
+
+  .wallet-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--base-padding);
+
+    @media (max-width: 480px) {
+      flex-direction: column;
+    }
+
+    button {
+      background: var(--wallet-btn-background);
+      color: var(--wallet-btn-color);
+      border-radius: var(--wallet-btn-border-radius);
+      border: var(--wallet-btn-border-size) var(--wallet-btn-border-weight) var(--wallet-btn-border-color);
+      min-width: 100px;
+    }
   }
 }
