@@ -32,13 +32,14 @@
             color: red;
         }
     </style>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/web3/1.6.0/web3.min.js"></script>
+<!--    <script src="//cdnjs.cloudflare.com/ajax/libs/web3/1.6.0/web3.min.js"></script>-->
 </head>
 
 <body>
-<crypto-tips>
+<crypto-tips default-tip="0.3">
 <!--    <p slot="info">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Atque dolores earum est hic id illo minus nihil nobis, perferendis quaerat sint soluta tenetur! Cum dolores ipsum iste maiores odit quisquam?</p>-->
     <span slot="button">Donate now</span>
+<!--    <p slot="success">Thanks for your support</p>-->
 </crypto-tips>
 <script src="<%= htmlWebpackPlugin.files.chunks.main.entry %>"></script>
 </body>

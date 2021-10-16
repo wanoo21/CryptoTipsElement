@@ -1,12 +1,20 @@
 @import 'modules/variables';
 
+@mixin button {
+  background: var(--tip-btn-background);
+  color: var(--tip-btn-color);
+  border-radius: var(--tip-btn-border-radius);
+  border: var(--tip-btn-border-size) var(--tip-btn-border-weight) var(--tip-btn-border-color);
+}
+
+
 :host {
-  --base-padding: 1em;
+  --base-padding: 1rem;
   --base-text-color: #605050;
   --font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 
   --base-btn-border-radius: 3px;
-  --base-btn-padding-y: calc(var(--base-padding) / 3);
+  --base-btn-padding-y: calc(var(--base-padding) / 2);
   --base-btn-padding-x: var(--base-padding);
   --base-btn-font-size: 0.8rem;
   --base-btn-cursor: pointer;
@@ -29,6 +37,7 @@
   font-family: var(--font-family);
   color: var(--base-text-color);
   padding: calc(var(--base-padding) / 2);
+  box-sizing: border-box;
 
   [hidden] {
     display: none !important;
@@ -37,8 +46,19 @@
   button {
     font-family: var(--font-family);
     font-size: var(--base-btn-font-size);
-    cursor: var(--base-btn-cursor);
     padding: var(--base-btn-padding-y) var(--base-btn-padding-x);
+
+    &:not([disabled]) {
+      cursor: var(--base-btn-cursor);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+    }
+  }
+
+  ::slotted(p), p {
+    margin: calc(var(--base-padding) / 2) 0;
   }
 
   .container {
@@ -50,10 +70,7 @@
       margin-inline-start: auto;
 
       button {
-        background: var(--tip-btn-background);
-        color: var(--tip-btn-color);
-        border-radius: var(--tip-btn-border-radius);
-        border: var(--tip-btn-border-size) var(--tip-btn-border-weight) var(--tip-btn-border-color);
+        @include button;
       }
     }
 
@@ -88,6 +105,32 @@
       border-radius: var(--wallet-btn-border-radius);
       border: var(--wallet-btn-border-size) var(--wallet-btn-border-weight) var(--wallet-btn-border-color);
       min-width: 100px;
+    }
+  }
+
+  .form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--base-padding) / 2);
+
+    .group {
+      display: flex;
+      gap: var(--base-padding);
+
+      input {
+        padding: var(--base-btn-padding-y) var(--base-btn-padding-x);
+        border-radius: var(--tip-btn-border-radius);
+        border: var(--tip-btn-border-size) var(--tip-btn-border-weight) var(--tip-btn-border-color);
+
+        &:invalid {
+          border-color: brown;
+        }
+      }
+
+      button {
+        @include button;
+      }
     }
   }
 }

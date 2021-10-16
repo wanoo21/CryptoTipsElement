@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" >
     <div class="container-info">
         <slot name="info">Show your love sending a tip</slot>
     </div>
@@ -12,4 +12,20 @@
 <div class="wallet-container" hidden>
     <button class="wallet" type="button" value="metamask">Metamask</button>
     <button class="wallet" type="button" value="coinbase">Coinbase</button>
+</div>
+
+<form class="form-container" hidden>
+    <div class="group">
+        <input required type="number" min=".01" step=".01" placeholder="0.1" aria-describedby="tip">
+        <button type="submit">
+            <slot name="button">Donate now</slot>
+        </button>
+    </div>
+    <small id="tip">Insert desired amount in ETH.</small>
+</form>
+
+<div class="success-container" hidden>
+    <slot name="success">
+        <p>Thanks for your support, we appreciate it.</p>
+    </slot>
 </div>
