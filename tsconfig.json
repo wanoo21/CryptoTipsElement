@@ -6,6 +6,7 @@
     "module": "ESNext",
     "target": "ES2017",
     "allowJs": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true
   }
 }

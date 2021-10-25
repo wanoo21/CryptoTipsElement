@@ -1,11 +1,13 @@
-import Web3 from 'web3';
+import detectEthereumProvider from '@metamask/detect-provider'
 
-const ETHCurrency = new Intl.NumberFormat(navigator.language, {
-    style: 'currency', currency: 'ETH', minimumFractionDigits: 3
-});
+// const ETHCurrency = new Intl.NumberFormat(navigator.language, {
+//     style: 'currency', currency: 'ETH', minimumFractionDigits: 3
+// });
+
+// https://docs.metamask.io/guide/ethereum-provider.html#using-the-provider
 
 class CryptoTips extends HTMLElement {
-    #web3: Web3;
+    #provider: any;
     #address: string;
     #root: ShadowRoot;
     #steps: Map<string, HTMLFormElement | HTMLDivElement>;
@@ -26,6 +28,10 @@ class CryptoTips extends HTMLElement {
 
     get defaultTip(): string {
         return this.getAttribute('default-tip') || '0.1'
+    }
+
+    get #ownerAddress(): string {
+        return this.getAttribute('to');
     }
 
     get #walletBtns(): NodeListOf<HTMLButtonElement> {
@@ -66,41 +72,15 @@ class CryptoTips extends HTMLElement {
 
     async getAccount(): Promise<void> {
         try {
-            const [address] = await this.#web3.eth.requestAccounts()
+            const [address] = await this.#provider.request({method: 'eth_requestAccounts'})
             this.#address = address;
-            const wei = await this.getBalance();
-            this.#donateBtn.innerText = ETHCurrency.format(Number(this.#web3.utils.fromWei(wei, 'ether')))
         } catch (e) {
             console.error(e)
         }
     }
 
-    // Get balance in wei
-    async getBalance(): Promise<string> {
-        try {
-            return await this.#web3.eth.getBalance(this.#address);
-        } catch {
-            // this.tipBtn.innerText = Currency.format(+this.#web3.utils.fromWei(wei, 'ether'))
-        }
-    }
-
     async connectedCallback() {
-        if (!window.Web3) {
-            this.#disableActions(true);
-            const web3js = document.createElement('script');
-            web3js.src = "//cdnjs.cloudflare.com/ajax/libs/web3/1.6.0/web3.min.js";
-            // web3js.async = true;
-            web3js.onload = async () => {
-                // this.#web3 = new window.Web3(window.Web3.givenProvider);
-                // await this.getAccount()
-                this.#disableActions(false);
-            }
-            document.head.appendChild(web3js);
-        } else {
-            // this.#web3 = new window.Web3(window.Web3.givenProvider)
-            // await this.getAccount()
-        }
-        this.#addAllListeners();
+        await this.#addAllListeners();
     }
 
     // Invoked when the custom element is moved to a new document.
@@ -119,13 +99,25 @@ class CryptoTips extends HTMLElement {
         })
     }
 
-    #donateSuccess(): void {
+    async #donate(): Promise<void> {
+        const transactionHash = await this.#provider.request({
+            method: 'eth_sendTransaction',
+            params: [
+                {
+                    from: this.#address,
+                    to: this.#ownerAddress,
+                    value: (+this.#tipInput.value * 10e17).toString(16),
+                }
+            ]
+        })
+        console.log(transactionHash);
         this.#showStep('success');
     }
 
-    #addAllListeners(): void {
+    async #addAllListeners(): Promise<void> {
+        this.#provider = await detectEthereumProvider();
         this.#walletBtns.forEach(btn => {
-            btn.onclick = () => this.#selectProvider(btn);
+            btn.onclick = () => this.#selectProvider();
         })
 
         this.#donateBtn.onclick = () => {
@@ -136,7 +128,7 @@ class CryptoTips extends HTMLElement {
         this.#tipInput.setAttribute('value', this.defaultTip)
         this.#tipFormContainer.onsubmit = event => {
             event.preventDefault();
-            this.#donateSuccess();
+            this.#donate().then();
         }
 
         this.#steps = new Map<string, HTMLFormElement | HTMLDivElement>([
@@ -151,9 +143,8 @@ class CryptoTips extends HTMLElement {
         this.#showStep('wallets');
     }
 
-    #selectProvider(btn: HTMLButtonElement): void {
-        console.log(btn.value);
-        this.#web3 = new window.Web3(window.Web3.givenProvider);
+    async #selectProvider(): Promise<void> {
+        await this.getAccount()
         this.#showStep('donate');
     }
 
