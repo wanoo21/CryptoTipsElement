@@ -26,12 +26,18 @@
   --tip-btn-border-radius: var(--base-btn-border-radius);
   --tip-btn-border-color: var(--tip-btn-background);
 
-  --wallet-btn-background: white;
-  --wallet-btn-color: var(--base-text-color);
-  --wallet-btn-border-size: 1px;
-  --wallet-btn-border-weight: solid;
-  --wallet-btn-border-radius: var(--base-btn-border-radius);
-  --wallet-btn-border-color: var(--base-text-color);
+  --alert-warning-background: sandybrown;
+  --alert-warning-color: white;
+  --alert-danger-background: red;
+  --alert-danger-color: white;
+
+  --alert-top: 10px;
+  --alert-right: 10px;
+  --alert-left: auto;
+  --alert-bottom: auto;
+  --alert-transition: all 600ms ease-in-out;
+  --alert-border-radius: var(--base-btn-border-radius);
+  //--alert-border-color: var(--base-text-color);
 
   display: block;
   font-family: var(--font-family);
@@ -59,6 +65,31 @@
 
   ::slotted(p), p {
     margin: calc(var(--base-padding) / 2) 0;
+  }
+
+  .alert {
+    position: fixed;
+    top: var(--alert-top);
+    right: var(--alert-right);
+    left: var(--alert-left);
+    bottom: var(--alert-bottom);
+    padding: var(--base-btn-padding-y) var(--base-btn-padding-x);
+    border-radius: var(--alert-border-radius);
+    transition: var(--alert-transition);
+    opacity: 0;
+    cursor: pointer;
+
+    &-warning {
+      background: var(--alert-warning-background);
+      color: var(--alert-warning-color);
+      opacity: 1;
+    }
+
+    &-danger {
+      background: var(--alert-danger-background);
+      color: var(--alert-danger-color);
+      opacity: 1;
+    }
   }
 
   .container {

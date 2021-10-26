@@ -6,11 +6,58 @@ import detectEthereumProvider from '@metamask/detect-provider'
 
 // https://docs.metamask.io/guide/ethereum-provider.html#using-the-provider
 
+class Notify {
+    #el: HTMLDivElement;
+    #timeout: number;
+
+    constructor(root: ShadowRoot) {
+        this.#el = root.querySelector('.alert');
+
+        this.#el.onclick = () => {
+            this.#clearTimeout();
+            this.hide().then()
+        }
+    }
+
+    async alert(color: 'danger' | 'warning', message: string): Promise<void> {
+        this.#el.classList.add(`alert-${color}`);
+        this.#el.innerText = message;
+        this.#el.hidden = false;
+        this.#timeout = setTimeout(() => {
+            this.hide().then();
+        }, 3000) as unknown as number
+    }
+
+    async hide(): Promise<void> {
+        this.#el.classList.remove('alert-warning', 'alert-danger');
+        this.#clearTimeout();
+        await this.#waitAnimation();
+        this.#el.hidden = true;
+        this.#el.innerText = '';
+    }
+
+    #clearTimeout(): void {
+        if (this.#timeout) {
+            clearTimeout(this.#timeout)
+        }
+    }
+
+    #waitAnimation(): Promise<void> {
+        return new Promise(((resolve) => {
+            this.#el.ontransitionend = () => {
+                resolve()
+            }
+        }))
+    }
+}
+
 class CryptoTips extends HTMLElement {
     #provider: any;
-    #address: string;
-    #root: ShadowRoot;
+    #fromAddress: string;
+    #toAddress: string;
+    readonly #root: ShadowRoot;
     #steps: Map<string, HTMLFormElement | HTMLDivElement>;
+    readonly #notify: Notify;
 
     constructor() {
         super();
@@ -24,26 +71,19 @@ class CryptoTips extends HTMLElement {
         const template = document.createElement('template');
         template.innerHTML = require('./crypto-tips.html');
         this.#root.appendChild(template.content.cloneNode(true));
+
+        this.#notify = new Notify(this.#root);
+
+        // TODO add custom events on donate & abort
+        // this.dispatchEvent(new CustomEvent('donated', {detail: {}}))
     }
 
     get defaultTip(): string {
         return this.getAttribute('default-tip') || '0.1'
     }
 
-    get #ownerAddress(): string {
-        return this.getAttribute('to');
-    }
-
-    get #walletBtns(): NodeListOf<HTMLButtonElement> {
-        return this.#walletContainer.querySelectorAll('button');
-    }
-
     get #container(): HTMLDivElement {
         return this.#root.querySelector('.container');
-    }
-
-    get #walletContainer(): HTMLDivElement {
-        return this.#root.querySelector('.wallet-container');
     }
 
     get #successContainer(): HTMLDivElement {
@@ -58,10 +98,6 @@ class CryptoTips extends HTMLElement {
         return this.#tipFormContainer.querySelector('input');
     }
 
-    // get #tipButton(): HTMLButtonElement {
-    //     return this.#tipForm.querySelector('button');
-    // }
-
     get #isDryRun(): boolean {
         return this.hasAttribute('dry-run');
     }
@@ -70,17 +106,41 @@ class CryptoTips extends HTMLElement {
         return this.#container.querySelector('button');
     }
 
-    async getAccount(): Promise<void> {
-        try {
-            const [address] = await this.#provider.request({method: 'eth_requestAccounts'})
-            this.#address = address;
-        } catch (e) {
-            console.error(e)
-        }
-    }
-
     async connectedCallback() {
-        await this.#addAllListeners();
+        this.#toAddress = this.getAttribute('to');
+        if (this.#toAddress) {
+            this.removeAttribute('to')
+            this.#provider = await detectEthereumProvider();
+
+            if (this.#provider) {
+                this.#provider.on('accountsChanged', (accounts: string[]) => this.#handleAccountChanged(accounts));
+
+                this.#steps = new Map<string, HTMLFormElement | HTMLDivElement>([
+                    ['init', this.#container],
+                    ['donate', this.#tipFormContainer],
+                    ['success', this.#successContainer],
+                ]);
+
+                this.#donateBtn.onclick = () => {
+                    this.#requestAccount().then(() => {
+                        this.#showStep('donate');
+                    });
+                }
+
+                // Insert default value
+                this.#tipInput.setAttribute('value', this.defaultTip)
+                this.#tipFormContainer.onsubmit = event => {
+                    event.preventDefault();
+                    this.#donate().then();
+                }
+            } else {
+                // TODO ask user what to do in case no wallet is found
+                console.info('Please install MetaMask!');
+            }
+
+        } else {
+            console.info('[to] attribute is mandatory.')
+        }
     }
 
     // Invoked when the custom element is moved to a new document.
@@ -100,52 +160,54 @@ class CryptoTips extends HTMLElement {
     }
 
     async #donate(): Promise<void> {
-        const transactionHash = await this.#provider.request({
-            method: 'eth_sendTransaction',
-            params: [
-                {
-                    from: this.#address,
-                    to: this.#ownerAddress,
-                    value: (+this.#tipInput.value * 10e17).toString(16),
-                }
-            ]
-        })
-        console.log(transactionHash);
-        this.#showStep('success');
-    }
-
-    async #addAllListeners(): Promise<void> {
-        this.#provider = await detectEthereumProvider();
-        this.#walletBtns.forEach(btn => {
-            btn.onclick = () => this.#selectProvider();
-        })
-
-        this.#donateBtn.onclick = () => {
-            this.#selectWallet();
+        try {
+            this.#disableActions(true);
+            if (!this.#isDryRun) {
+                const transactionHash = await this.#provider.request({
+                    method: 'eth_sendTransaction',
+                    params: [
+                        {
+                            from: this.#fromAddress,
+                            to: this.#toAddress,
+                            value: (+this.#tipInput.value * 10e17).toString(16),
+                        }
+                    ]
+                })
+                // TODO send anonymous data to our server
+                console.log(transactionHash);
+            }
+            this.#showStep('success');
+        } catch (err) {
+            if (err.code === 4001) {
+                this.#notify.alert('warning', 'Transaction aborted.').then()
+            }
+        } finally {
+            this.#disableActions(false);
         }
+    }
 
-        // Insert default value
-        this.#tipInput.setAttribute('value', this.defaultTip)
-        this.#tipFormContainer.onsubmit = event => {
-            event.preventDefault();
-            this.#donate().then();
+    async #requestAccount(): Promise<void> {
+        try {
+            const accounts = await this.#provider.request({method: 'eth_requestAccounts'})
+            this.#handleAccountChanged(accounts);
+        } catch (err) {
+            if (err.code === 4001) {
+                // EIP-1193 userRejectedRequest error
+                // If this happens, the user rejected the connection request.
+                this.#notify.alert('warning', 'Please connect to Wallet').then()
+            } else {
+                this.#notify.alert('danger', err.message).then()
+            }
         }
-
-        this.#steps = new Map<string, HTMLFormElement | HTMLDivElement>([
-            ['init', this.#container],
-            ['wallets', this.#walletContainer],
-            ['donate', this.#tipFormContainer],
-            ['success', this.#successContainer],
-        ]);
     }
 
-    #selectWallet(): void {
-        this.#showStep('wallets');
-    }
-
-    async #selectProvider(): Promise<void> {
-        await this.getAccount()
-        this.#showStep('donate');
+    #handleAccountChanged(accounts: string[]): void {
+        if (accounts.length === 0) {
+            // MetaMask is locked or the user has not connected any accounts
+            this.#notify.alert('warning', 'Please connect to Wallet').then()
+        } else if (accounts[0] !== this.#fromAddress) {
+            this.#fromAddress = accounts[0];
+        }
     }
 
     #showStep(step: 'init' | 'wallets' | 'donate' | 'success'): void {
