@@ -6,7 +6,6 @@
   "scripts": {
     "build:dev": "webpack-dev-server --env dev --mode none",
     "build:prod": "webpack --env prod --mode production",
-    "gh-deploy": "git push origin gh-pages && git subtree push --prefix dist origin gh-pages",
     "prepack": "npm run build:prod",
     "prepublishOnly": "npm run build:prod",
     "start": "npm run build:dev"
